@@ -27,6 +27,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.primeraappandroid.models.Actividad
 import com.example.primeraappandroid.ui.theme.PrimeraAppAndroidTheme
 
 class NotasActivity : ComponentActivity() {
@@ -43,31 +44,44 @@ class NotasActivity : ComponentActivity() {
 fun NotasPage() {
     var actividad by remember { mutableStateOf<String>(value = "") }
     var nota by remember { mutableStateOf<Double>(value = 0.0) }
+    var mostrarValidacion by remember { mutableStateOf<Boolean>(false) }
+    var actividadobj by remember {
+        mutableStateOf<Actividad>(
+            Actividad(nombre = "", nota = 0.0, mostrarValidacionNota = false)
+        )
+    }
 
     PrimeraAppAndroidTheme {
         Column {
             NotasForm(
+                actividadobj = actividadobj,
                 actividad = actividad,
                 nota = nota,
-                setActividad = {actividad=it},
-                setNota = {nota=it},
-
-                )
-            ValidacionNota(
-                actividad = actividad,
-                nota = nota
+                setActividad = { actividad = it },
+                setNota = { actividadobj = Actividad(nota=it, mostrarValidacionNota = true) },
+                setMostrarValidacion = {mostrarValidacion=it}
             )
+            if(actividadobj.mostrarValidacionNota) {
+                ValidacionNota(
+                    actividad = actividad,
+                    nota = actividadobj.nota
+                )
+            }
+
         }
     }
 }
 
 @Composable
 fun NotasForm(
+    actividadobj: Actividad,
     actividad: String,
     nota: Double,
-    setActividad: (value:String)->Unit,
-    setNota: (value:Double)->Unit
+    setActividad: (value: String) -> Unit,
+    setNota: (value: Double) -> Unit,
+    setMostrarValidacion: (value: Boolean) -> Unit
 ) {
+    var notaTxt by remember { mutableStateOf(actividadobj.nota.toString()) }
     Column(
         modifier = Modifier.padding(12.dp)
     ) {
@@ -77,20 +91,21 @@ fun NotasForm(
             Text(text = stringResource(id = R.string.actividad_text))
             TextField(value = actividad,
                 onValueChange = { value -> setActividad(value) }
-                    )
+            )
         }
         Row(
             modifier = Modifier.padding(bottom = 12.dp)
         ) {
             Text(text = stringResource(id = R.string.nota_text))
-            TextField(value = nota.toString(), onValueChange = {setNota(it.toDouble())})
+            TextField(value = notaTxt, onValueChange = { notaTxt = it })
         }
         Button(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(color = colorResource(id = R.color.purple_200)),
             onClick = {
-                setActividad("54321")
+                setNota(notaTxt.toDouble())
+                setMostrarValidacion(true)
             }) {
             Text(stringResource(id = R.string.guardar_btn))
         }
